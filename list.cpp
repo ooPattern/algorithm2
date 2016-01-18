@@ -13,7 +13,7 @@
 typedef struct _ListElmt
 {
 	void* pData;//数据指针
-	struct _ListElmt* pNext; 
+	struct _ListElmt* pNext;
 } T_LIST_ELMT;
 
 //链表结构定义
@@ -162,7 +162,10 @@ void ListDestory( T_LIST_TBL* pList )
     pCur = pList->pHead;
     while( pCur != NULL )
     {
+        //记录原来节点的位置，准备释放空间
         pOld = pCur;
+        //记录下一个节点的位置，不能放在释放节点空间的后面，放在后面就找不到了
+        pCur = pCur->pNext;
         //释放链表节点的数据内容,必须先释放节点的数据内容,然后再释放节点
         if( pOld->pData != NULL )
         {            
@@ -172,8 +175,7 @@ void ListDestory( T_LIST_TBL* pList )
         if( pOld != NULL )
         {
             free( pOld );
-        }
-        pCur = pCur->pNext;
+        }        
     }
     //置0链表数据
     pList->pHead = NULL;

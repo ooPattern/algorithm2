@@ -31,7 +31,7 @@ int HashInit( T_HASH_TBL* pHash, int buckets )
 }
 
 //计算哈希键值
-int HashKey( void* pKey )
+int HashKey( const void* pKey )
 {
     if( NULL == pKey )
     {
@@ -42,13 +42,14 @@ int HashKey( void* pKey )
 }
 
 //匹配2个元素是否相同
-int HashMatch( void* pKey1, void* pKey2 )
+int HashMatch( const void* pKey1, const void* pKey2 )
 {
     if( ( NULL == pKey1 ) || ( NULL == pKey2 ) )
     {
         return -1;
     }
 
+    return -1;
 }
 
 //哈希表增加一个元素
@@ -59,13 +60,24 @@ int HashInsert( T_HASH_TBL* pHash, void* pData )
     {
         return -1;
     }
+    //为什么要检查哈希表是否已经存在该元素,不能直接插入哈希表中吗?
+    //HashLookup(...)
+    //同一个桶不能有2个相同的元素吗?
     //计算哈希键值
     if( ( key = HashKey( pData ) ) < 0 )
     {
         return -1;
     }
+    //计算桶的位置
+    key = key % pHash->buckets;
     //需要判断哈希键值是否冲突吗,还是说直接插入元素
-    return ListInsertNext( &(pHash->pList[key]), NULL, pData );    
+    if( 0 == ListInsertNext( &(pHash->pList[key]), NULL, pData ) )
+    {
+        //哈希表的容量会越变越大
+        pHash->size++;
+        return 0;
+    }
+    return -1;
 }
 
 //哈希表删除一个元素
@@ -89,9 +101,15 @@ int HashRemove( T_HASH_TBL* pHash, void** pData )
     while( pCur != NULL )
     {
         //在链表中遍历是否存在该元素,找到后就删除它
-        if( pCur->pData == *pData )
+        if( 0 == HashMatch( pCur->pData, *pData ) )
         {
-            return ListRemoveNext( &(pHash->pList[key]), pPrev, pData );
+            if( 0 == ListRemoveNext( &(pHash->pList[key]), pPrev, pData ) )
+            {
+                pHash->size--;
+                return 0;
+            }
+            //删除元素失败
+            return -1;
         }
         //遍历下一个元素,但是要记录上一个元素的位置
         pPrev = pCur;
