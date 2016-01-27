@@ -31,7 +31,16 @@ int BitreeInit( T_BITREE_TBL* pTree )
 //清空二叉树
 void BitreeDestory( T_BITREE_TBL* pTree )
 {
-    //按照某种顺序：先序、后序、中序等方式删除二叉树所有结点
+    //递归删除整个树
+    BitreeRemoveLeft( pTree, NULL );
+    pTree->pRoot = NULL;
+    pTree->size = 0;
+}
+
+//获取树的高度
+int BitreeHeight( T_BITREE_TBL* pTree )
+{
+    
 }
 
 //二叉树的某个结点增加一个左子结点
@@ -60,7 +69,7 @@ int BitreeInsertLeft( T_BITREE_TBL* pTree, T_BITREE_NODE* pNode, void* pData )
     else
     {
         //必须是叶子结点
-        if( BitreeIsLeaf( pNode ) != 0 )
+        if( BitreeLeft( pNode ) != NULL )
         {
             return -1;
         }
@@ -107,7 +116,7 @@ int BitreeInsertRight( T_BITREE_TBL* pTree, T_BITREE_NODE* pNode, void* pData )
     else
     {
         //必须是叶子结点
-        if( BitreeIsLeaf( pNode ) != 0 )
+        if( BitreeRight( pNode ) != NULL )
         {
             return -1;
         }
@@ -131,18 +140,96 @@ int BitreeInsertRight( T_BITREE_TBL* pTree, T_BITREE_NODE* pNode, void* pData )
 //二叉树的某个结点删除它的左子树
 int BitreeRemoveLeft( T_BITREE_TBL* pTree, T_BITREE_NODE* pNode )
 {
+    T_BITREE_NODE** pPosition = NULL;
+
     if( NULL == pTree )
     {
         return -1;
     }
-    //删除结点的左子树
 
+    //必须要有节点
+    if( 0 == pTree->size )
+    {
+        return -1;
+    }
+
+    //记录删除节点的位置
+    if( NULL == pNode )
+    {
+        pPosition = &(pTree->pRoot);
+    }
+    else
+    {
+        pPosition = &(pNode->pLeft);
+    }
+
+    //删除结点的左子树,采用后序的方式递归删除：左右根
+    if( *pPosition != NULL )
+    {
+        //递归删除左节点
+        BitreeRemoveLeft( pTree, *pPosition );
+        //递归删除右节点
+        BitreeRemoveRight( pTree, *pPosition );
+        //删除节点内容
+        if( (*pPosition)->pData != NULL )
+        {
+            free( (*pPosition)->pData );
+        }
+        //递归删除根节点
+        free( *pPosition );
+        //清除节点指针值,Why???
+        *pPosition = NULL;
+        pTree->size--;
+    }
+    
     return 0;
 }
 
 //二叉树的某个结点删除它的右子树
 int BitreeRemoveRight( T_BITREE_TBL* pTree, T_BITREE_NODE* pNode )
 {
+    T_BITREE_NODE** pPosition = NULL;
+
+    if( NULL == pTree )
+    {
+        return -1;
+    }
+
+    //必须要有节点
+    if( 0 == pTree->size )
+    {
+        return -1;
+    }
+
+    //记录删除节点的位置
+    if( NULL == pNode )
+    {
+        pPosition = &(pTree->pRoot);
+    }
+    else
+    {
+        pPosition = &(pNode->pRight);
+    }
+
+    //删除节点的右子树,采用后序的方式递归删除：左右根
+    if( *pPosition != NULL )
+    {
+        //递归删除左节点
+        BitreeRemoveLeft( pTree, *pPosition );
+        //递归删除右节点
+        BitreeRemoveRight( pTree, *pPosition );
+        //删除节点内容
+        if( (*pPosition)->pData != NULL )
+        {
+            free( (*pPosition)->pData );
+        }
+        //递归删除根节点
+        free( *pPosition );
+        //清除节点指针,Why???
+        *pPosition = NULL;
+        pTree->size--;
+    }
+
     return 0;
 }
 
